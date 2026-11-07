@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Smart Device - 一个只属于你自己的个人终端原型。数据留在本机，可随时带走。">
+<title>Smart Device · 个人终端</title>
+<style>
+:root{
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "Cascadia Code", Consolas, "Liberation Mono", monospace;
+}
+html[data-theme="dark"]{
+  --bg:#0d1117; --surface:#161b22; --surface-2:#1b212a; --border:#2a313c;
+  --text:#e6edf3; --muted:#8b949e; --faint:#6e7681;
+  --accent:#3fb98c; --accent-soft:rgba(63,185,140,.12);
+  --warn:#d29922; --danger:#f85149; --tag:#21262d;
+}
+html[data-theme="light"]{
+  --bg:#f6f8fa; --surface:#ffffff; --surface-2:#f1f4f7; --border:#d8dee4;
+  --text:#1f2328; --muted:#656d76; --faint:#8c959f;
+  --accent:#0f6e56; --accent-soft:rgba(15,110,86,.09);
+  --warn:#9a6700; --danger:#cf222e; --tag:#eaeef2;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{max-width:1120px;margin:0 auto;padding:26px 20px 48px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);flex:none}
+.brand-name{font-family:var(--font-mono);font-size:15px;font-weight:600;letter-spacing:.14em}
+.brand-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.clock{text-align:center;font-family:var(--font-mono);line-height:1.35}
+#clock-time{font-size:19px;letter-spacing:.06em}
+#clock-date{font-size:11.5px;color:var(--muted);letter-spacing:.03em}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 12px;font-size:12.5px;transition:border-color .15s,background .15s;white-space:nowrap}
+.btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.btn.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.btn.danger:hover{border-color:var(--danger);color:var(--danger);background:transparent}
+.banner{margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--muted)}
+.banner strong{color:var(--text);font-weight:500}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.span-2{grid-column:1 / -1}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;min-width:0}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-head h2{margin:0;font-size:14px;font-weight:600;letter-spacing:.02em}
+.tag{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);background:var(--tag);border:1px solid var(--border);border-radius:20px;padding:2px 9px;white-space:nowrap}
+.hint{font-size:12px;color:var(--faint);margin:-6px 0 12px}
+.brief-body{white-space:pre-wrap;font-size:13.5px;line-height:1.9;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;min-height:96px}
+.card-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.input{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 12px;outline:none;font-size:13px}
+.input::placeholder{color:var(--faint)}
+.input:focus{border-color:var(--accent)}
+.row{display:flex;gap:8px}
+.row .input{flex:1;min-width:0}
+.list{list-style:none;margin:12px 0 0;padding:0;max-height:238px;overflow:auto}
+.list.compact{max-height:190px}
+.item{display:flex;align-items:flex-start;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border);font-size:13px}
+.item:last-child{border-bottom:0}
+.item .body{flex:1;min-width:0;word-break:break-word}
+.item.done .body{color:var(--faint);text-decoration:line-through}
+.item input[type=checkbox]{margin-top:4px;accent-color:var(--accent);width:15px;height:15px;flex:none;cursor:pointer}
+.meta{display:block;font-size:11px;color:var(--faint);margin-top:2px;text-decoration:none}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:10.5px;color:var(--accent);background:var(--accent-soft);border-radius:5px;padding:0 5px;margin-right:5px}
+.demo-flag{font-size:10px;color:var(--warn);border:1px solid var(--border);border-radius:4px;padding:0 4px;margin-left:4px}
+.del{background:none;border:0;color:var(--faint);font-size:16px;line-height:1;padding:2px 4px;flex:none}
+.del:hover{color:var(--danger)}
+.empty{color:var(--faint);font-size:12.5px;padding:14px 2px;text-align:center}
+.term-out{height:188px;overflow:auto;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:12px 14px;font-family:var(--font-mono);font-size:12.5px;line-height:1.8}
+.term-line{white-space:pre-wrap;word-break:break-word;color:var(--muted)}
+.term-line.cmd{color:var(--accent)}
+.term-line.ok{color:var(--text)}
+.term-line.err{color:var(--danger)}
+.term-line.dim{color:var(--faint)}
+.term-in{display:flex;align-items:center;gap:9px;margin-top:10px}
+.prompt{font-family:var(--font-mono);color:var(--accent);font-size:13px;flex:none}
+#term-input{background:transparent;border:0;outline:none;color:var(--text);flex:1;min-width:0;font-family:var(--font-mono);font-size:12.5px}
+footer{margin-top:22px;padding-top:18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--faint)}
+footer p{margin:0 0 5px}
+footer strong{color:var(--muted);font-weight:500}
+.kbd{font-family:var(--font-mono);background:var(--tag);border:1px solid var(--border);border-radius:4px;padding:0 5px}
+@media(max-width:760px){
+  .app{padding:18px 14px 36px}
+  .grid{grid-template-columns:1fr}
+  .span-2{grid-column:auto}
+  .clock{order:3;text-align:left;width:100%}
+  .actions{width:100%}
+  .topbar{gap:12px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        <div class="brand-name">SMART DEVICE</div>
+        <div class="brand-sub">个人终端 · 本地模式 v0.1</div>
+      </div>
+    </div>
+    <div class="clock">
+      <div id="clock-time">--:--:--</div>
+      <div id="clock-date">--</div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btn-theme" title="切换明暗主题">主题</button>
+      <button class="btn" id="btn-export" title="导出全部数据为 JSON">导出</button>
+      <button class="btn" id="btn-import" title="从 JSON 文件恢复数据">导入</button>
+      <button class="btn danger" id="btn-reset" title="清空本机全部数据">清空</button>
+      <input type="file" id="file-input" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <div class="banner" id="demo-banner" hidden>
+    <span><strong>当前是示例数据。</strong> 所有内容只存在你这台设备的浏览器里，不会上传，也不会同步。</span>
+    <button class="btn primary" id="btn-clear-demo">清空示例，开始使用</button>
+  </div>
+
+  <main class="grid">
+    <section class="card span-2">
+      <div class="card-head">
+        <h2>晨间简报</h2>
+        <span class="tag">本地模板生成 · 未接入模型</span>
+      </div>
+      <div class="brief-body" id="brief-body"></div>
+      <div class="card-foot">
+        <button class="btn primary" id="btn-copy-brief">复制简报</button>
+        <button class="btn" id="btn-refresh-brief">重新生成</button>
+        <button class="btn" id="btn-export-md">导出为 Markdown</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>今日聚焦</h2>
+        <span class="tag" id="todo-count">0 项</span>
+      </div>
+      <div class="row">
+        <input class="input" id="todo-input" placeholder="加一件今天要做的事，回车确认" autocomplete="off">
+      </div>
+      <ul class="list compact" id="todo-list"></ul>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>随手捕获</h2>
+        <span class="tag" id="note-count">0 条</span>
+      </div>
+      <div class="row">
+        <input class="input" id="note-input" placeholder="一句话、一个链接、一个念头… 支持 #标签" autocomplete="off">
+      </div>
+      <input class="input" id="note-search" placeholder="筛选记忆（按内容或 #标签）" autocomplete="off" style="margin-top:8px">
+      <ul class="list compact" id="note-list"></ul>
+    </section>
+
+    <section class="card span-2">
+      <div class="card-head">
+        <h2>终端</h2>
+        <span class="tag">输入 help 查看命令</span>
+      </div>
+      <div class="term-out" id="term-out" aria-live="polite"></div>
+      <div class="term-in">
+        <span class="prompt">$</span>
+        <input id="term-input" placeholder="试试：add 下午想到的一件事 / brief / help" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      <p><strong>数据在哪里：</strong> 仅存于本机浏览器 localStorage，无后端、无账号、无密钥、无第三方请求。</p>
+      <p><strong>怎么带走：</strong> 「导出」得到完整 JSON，换设备用「导入」恢复；简报也能单独存成 Markdown。</p>
+    </div>
+    <div>
+      <p><strong>下一步：</strong> 先跑两周，看哪个模块你天天用；再决定要不要接模型、加工具权限。</p>
+      <p>按 <span class="kbd">/</span> 聚焦终端 · <span class="kbd">↑ ↓</span> 翻历史命令</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var KEY = 'smart-device.v1';
+  var $ = function(id){ return document.getElementById(id); };
+
+  function uid(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function seed(){
+    return {
+      theme: 'auto',
+      demo: true,
+      todos: [
+        { id: uid(), text: '整理今天要发出去的周报', done: false, demo: true },
+        { id: uid(), text: '给 Smart Device 补上导出功能', done: false, demo: true },
+        { id: uid(), text: '睡前回顾今天记下的三条想法', done: false, demo: true }
+      ],
+      notes: [
+        { id: uid(), text: '个人终端的价值不在更聪明，在更懂我、真能动手 #想法', tags: ['想法'], ts: Date.now() - 7200000, demo: true },
+        { id: uid(), text: '早上问一句话就能拿到日程 + 待办 + 相关笔记，这个入口最顺手 #随手', tags: ['随手'], ts: Date.now() - 3600000, demo: true },
+        { id: uid(), text: '那篇讲本地优先软件的文章，周末看完 #待读', tags: ['待读'], ts: Date.now() - 1800000, demo: true }
+      ]
+    };
+  }
+
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data || !Array.isArray(data.todos) || !Array.isArray(data.notes)) return null;
+      return data;
+    } catch (e) { return null; }
+  }
+
+  var state = load() || seed();
+
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch (e) { print('保存失败：浏览器存储不可用或已写满', 'err'); }
+  }
+
+  function resolveTheme(t){
+    if (t === 'auto') {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    return t;
+  }
+
+  function applyTheme(){
+    document.documentElement.setAttribute('data-theme', resolveTheme(state.theme || 'auto'));
+  }
+
+  function fmtTime(ts){
+    var d = new Date(ts);
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
+      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  function extractTags(text){
+    var found = text.match(/#([^\s#]+)/g) || [];
+    var out = [];
+    for (var i = 0; i < found.length; i++) {
+      var t = found[i].slice(1);
+      if (out.indexOf(t) === -1) out.push(t);
+    }
+    return out;
+  }
+
+  function el(tag, cls, text){
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+
+  function renderTodos(){
+    var list = $('todo-list');
+    list.textContent = '';
+    if (!state.todos.length) {
+      list.appendChild(el('li', 'empty', '还没有待办。在上面加一件，或者用终端输入 todo <内容>。'));
+    }
+    state.todos.forEach(function(t){
+      var li = el('li', 'item' + (t.done ? ' done' : ''));
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = !!t.done;
+      cb.setAttribute('aria-label', '标记完成：' + t.text);
+      cb.addEventListener('change', function(){
+        t.done = cb.checked;
+        save();
+        renderTodos();
+        renderBrief();
+      });
+      var body = el('div', 'body');
+      body.appendChild(document.createTextNode(t.text));
+      if (t.demo) body.appendChild(el('span', 'demo-flag', '示例'));
+      var del = el('button', 'del', '×');
+      del.title = '删除';
+      del.setAttribute('aria-label', '删除：' + t.text);
+      del.addEventListener('click', function(){
+        state.todos = state.todos.filter(function(x){ return x.id !== t.id; });
+        save(); renderTodos(); renderBrief();
+      });
+      li.appendChild(cb); li.appendChild(body); li.appendChild(del);
+      list.appendChild(li);
+    });
+    var left = state.todos.filter(function(t){ return !t.done; }).length;
+    $('todo-count').textContent = left + ' 项未完成';
+  }
+
+  function renderNotes(){
+    var list = $('note-list');
+    list.textContent = '';
+    var q = $('note-search').value.trim().toLowerCase();
+    var items = state.notes.slice().reverse();
+    if (q) {
+      items = items.filter(function(n){
+        return n.text.toLowerCase().indexOf(q) !== -1 ||
+          n.tags.some(function(t){ return ('#' + t).toLowerCase().indexOf(q) !== -1; });
+      });
+    }
+    if (!items.length) {
+      list.appendChild(el('li', 'empty', q ? '没有匹配的记忆。' : '记忆库是空的。随手写一句，它会一直留在这里。'));
+    }
+    items.forEach(function(n){
+      var li = el('li', 'item');
+      var body = el('div', 'body');
+      (n.tags || []).forEach(function(t){ body.appendChild(el('span', 'chip', '#' + t)); });
+      body.appendChild(document.createTextNode(n.text));
+      if (n.demo) body.appendChild(el('span', 'demo-flag', '示例'));
+      body.appendChild(el('span', 'meta', fmtTime(n.ts)));
+      var del = el('button', 'del', '×');
+      del.title = '删除';
+      del.setAttribute('aria-label', '删除这条记忆');
+      del.addEventListener('click', function(){
+        state.notes = state.notes.filter(function(x){ return x.id !== n.id; });
+        save(); renderNotes();
+      });
+      li.appendChild(body); li.appendChild(del);
+      list.appendChild(li);
+    });
+    $('note-count').textContent = state.notes.length + ' 条';
+  }
+
+  function buildBrief(){
+    var d = new Date();
+    var week = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+    var undone = state.todos.filter(function(t){ return !t.done; });
+    var recent = state.notes.slice(-3).reverse();
+    var lines = [];
+    lines.push((d.getMonth() + 1) + '月' + d.getDate() + '日 ' + week + '，早上好。');
+    if (undone.length) {
+      var names = undone.slice(0, 3).map(function(t){ return t.text; }).join('、');
+      lines.push('今天有 ' + undone.length + ' 件待办：' + names + (undone.length > 3 ? ' 等' : '') + '。');
+    } else {
+      lines.push('今天没有未完成的待办，节奏可以松一点。');
+    }
+    if (recent.length) {
+      lines.push('最近记下的：');
+      recent.forEach(function(n){
+        lines.push('  · ' + (n.text.length > 40 ? n.text.slice(0, 40) + '…' : n.text));
+      });
+    } else {
+      lines.push('记忆库还是空的，随手丢点什么进来，明天的简报就会不一样。');
+    }
+    lines.push('— 本地模板生成，未接入模型；数据始终留在本机。');
+    return lines.join('\n');
+  }
+
+  function renderBrief(){ $('brief-body').textContent = buildBrief(); }
+
+  function renderBanner(){ $('demo-banner').hidden = !state.demo; }
+
+  function renderAll(){
+    applyTheme(); renderTodos(); renderNotes(); renderBrief(); renderBanner();
+  }
+
+  function addNote(text){
+    state.notes.push({ id: uid(), text: text, tags: extractTags(text), ts: Date.now() });
+    save(); renderNotes(); renderBrief();
+  }
+
+  function addTodo(text){
+    state.todos.push({ id: uid(), text: text, done: false });
+    save(); renderTodos(); renderBrief();
+  }
+
+  function print(text, kind){
+    var out = $('term-out');
+    var line = el('div', 'term-line' + (kind ? ' ' + kind : ''), text);
+    out.appendChild(line);
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function download(name, text, type){
+    var blob = new Blob([text], { type: type || 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function stamp(){
+    var d = new Date();
+    return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  }
+
+  function exportJSON(){
+    var payload = { version: 1, exportedAt: new Date().toISOString(), theme: state.theme, todos: state.todos, notes: state.notes };
+    download('smart-device-' + stamp() + '.json', JSON.stringify(payload, null, 2), 'application/json;charset=utf-8');
+    return '已导出 JSON：smart-device-' + stamp() + '.json';
+  }
+
+  function toMarkdown(){
+    var lines = ['# Smart Device · 数据导出', '', '导出时间：' + new Date().toLocaleString('zh-CN'), '', '## 今日聚焦', ''];
+    if (!state.todos.length) lines.push('（空）');
+    state.todos.forEach(function(t){ lines.push('- [' + (t.done ? 'x' : ' ') + '] ' + t.text); });
+    lines.push('', '## 记忆库', '');
+    if (!state.notes.length) lines.push('（空）');
+    state.notes.slice().reverse().forEach(function(n){
+      var tags = (n.tags || []).map(function(t){ return '#' + t; }).join(' ');
+      lines.push('- ' + n.text + (tags ? '  ' + tags : '') + '  · ' + new Date(n.ts).toLocaleString('zh-CN'));
+    });
+    lines.push('', '---', '', '数据来自本机浏览器，未接入任何模型或后端。');
+    return lines.join('\n');
+  }
+
+  function exportMarkdown(){
+    download('smart-device-' + stamp() + '.md', toMarkdown(), 'text/markdown;charset=utf-8');
+    return '已导出 Markdown：smart-device-' + stamp() + '.md';
+  }
+
+  async function copyText(text){
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(ta);
+      return ok;
+    }
+  }
+
+  var HELP = [
+    '可用命令',
+    '  add <内容>          记一条到记忆库，支持 #标签',
+    '  todo <内容>         加一件今日待办',
+    '  ls                  列出最近 5 条记忆',
+    '  done <序号>         勾选第 N 件待办',
+    '  brief               打印晨间简报',
+    '  export [json|md]    导出数据（默认 json）',
+    '  theme [dark|light]  切换主题',
+    '  date                显示当前时间',
+    '  clear               清空终端输出',
+    '  reset confirm       清空全部数据（需二次确认）',
+    '  help                显示本帮助'
+  ];
+
+  function runCommand(raw){
+    var line = raw.trim();
+    if (!line) return;
+    print('$ ' + line, 'cmd');
+    var parts = line.split(/\s+/);
+    var cmd = parts[0].toLowerCase();
+    var arg = parts.slice(1).join(' ');
+    switch (cmd) {
+      case 'help':
+        HELP.forEach(function(h, i){ print(h, i === 0 ? 'ok' : 'dim'); });
+        break;
+      case 'add':
+        if (!arg) { print('用法：add <要记下的内容>', 'err'); break; }
+        addNote(arg);
+        print('已存入记忆库：' + arg, 'ok');
+        break;
+      case 'todo':
+        if (!arg) { print('用法：todo <今天要做的事>', 'err'); break; }
+        addTodo(arg);
+        print('已加入今日聚焦：' + arg, 'ok');
+        break;
+      case 'ls':
+        if (!state.notes.length) { print('记忆库是空的。', 'dim'); break; }
+        state.notes.slice(-5).reverse().forEach(function(n, i){
+          print('  [' + (i + 1) + '] ' + n.text, 'dim');
+        });
+        break;
+      case 'done': {
+        var n = parseInt(arg, 10);
+        var undone = state.todos.filter(function(t){ return !t.done; });
+        if (!n || n < 1 || n > undone.length) { print('序号无效，当前有 ' + undone.length + ' 件未完成待办', 'err'); break; }
+        undone[n - 1].done = true;
+        save(); renderTodos(); renderBrief();
+        print('已完成：' + undone[n - 1].text, 'ok');
+        break;
+      }
+      case 'brief':
+        buildBrief().split('\n').forEach(function(l){ print(l, 'ok'); });
+        break;
+      case 'export':
+        print(arg === 'md' ? exportMarkdown() : exportJSON(), 'ok');
+        break;
+      case 'theme':
+        if (arg !== 'dark' && arg !== 'light') { print('用法：theme dark 或 theme light', 'err'); break; }
+        state.theme = arg; save(); applyTheme();
+        print('主题已切换为 ' + arg, 'ok');
+        break;
+      case 'date':
+        print(new Date().toLocaleString('zh-CN'), 'ok');
+        break;
+      case 'clear':
+        $('term-out').textContent = '';
+        break;
+      case 'reset':
+        if (arg !== 'confirm') { print('这会删除本机全部数据。确认请输入：reset confirm', 'err'); break; }
+        state = { theme: state.theme, demo: false, todos: [], notes: [] };
+        save(); renderAll();
+        print('已清空全部数据。', 'ok');
+        break;
+      default:
+        print('未知命令：' + cmd + '  ·  输入 help 查看可用命令', 'err');
+    }
+  }
+
+  function tick(){
+    var d = new Date();
+    var week = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+    $('clock-time').textContent = String(d.getHours()).padStart(2, '0') + ':' +
+      String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+    $('clock-date').textContent = d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' +
+      String(d.getDate()).padStart(2, '0') + ' ' + week;
+  }
+
+  $('todo-input').addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && this.value.trim()) { addTodo(this.value.trim()); this.value = ''; }
+  });
+  $('note-input').addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && this.value.trim()) { addNote(this.value.trim()); this.value = ''; }
+  });
+  $('note-search').addEventListener('input', renderNotes);
+
+  $('btn-copy-brief').addEventListener('click', async function(){
+    var ok = await copyText(buildBrief());
+    print(ok ? '简报已复制到剪贴板' : '复制失败，请手动选中简报文本', ok ? 'ok' : 'err');
+  });
+  $('btn-refresh-brief').addEventListener('click', function(){
+    renderBrief(); print('简报已重新生成', 'ok');
+  });
+  $('btn-export-md').addEventListener('click', function(){ print(exportMarkdown(), 'ok'); });
+  $('btn-export').addEventListener('click', function(){ print(exportJSON(), 'ok'); });
+  $('btn-import').addEventListener('click', function(){ $('file-input').click(); });
+  $('file-input').addEventListener('change', function(){
+    var file = this.files && this.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try {
+        var data = JSON.parse(reader.result);
+        if (!data || !Array.isArray(data.todos) || !Array.isArray(data.notes)) throw new Error('格式不符');
+        state = { theme: data.theme || 'auto', demo: false, todos: data.todos, notes: data.notes };
+        save(); renderAll();
+        print('已导入 ' + state.todos.length + ' 项待办、' + state.notes.length + ' 条记忆', 'ok');
+      } catch (e) { print('导入失败：不是有效的 Smart Device JSON', 'err'); }
+    };
+    reader.readAsText(file);
+    this.value = '';
+  });
+  $('btn-reset').addEventListener('click', function(){
+    if (!window.confirm('确定清空本机保存的全部待办和记忆吗？此操作不可撤销，建议先导出备份。')) return;
+    state = { theme: state.theme, demo: false, todos: [], notes: [] };
+    save(); renderAll();
+    print('已清空全部数据。', 'ok');
+  });
+  $('btn-clear-demo').addEventListener('click', function(){
+    state = { theme: state.theme, demo: false, todos: [], notes: [] };
+    save(); renderAll();
+    print('示例数据已清空，现在开始记你自己的东西吧。', 'ok');
+  });
+  $('btn-theme').addEventListener('click', function(){
+    var order = ['dark', 'light', 'auto'];
+    var next = order[(order.indexOf(state.theme || 'auto') + 1) % order.length];
+    state.theme = next; save(); applyTheme();
+    print('主题：' + next + (next === 'auto' ? '（跟随系统）' : ''), 'ok');
+  });
+
+  var history = [];
+  var hIndex = -1;
+  var term = $('term-input');
+  term.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && this.value.trim()) {
+      history.push(this.value.trim());
+      hIndex = history.length;
+      runCommand(this.value);
+      this.value = '';
+    } else if (e.key === 'ArrowUp') {
+      if (hIndex > 0) { hIndex--; this.value = history[hIndex]; }
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      if (hIndex < history.length - 1) { hIndex++; this.value = history[hIndex]; }
+      else { hIndex = history.length; this.value = ''; }
+      e.preventDefault();
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      term.focus(); e.preventDefault();
+    }
+  });
+
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function(){
+      if ((state.theme || 'auto') === 'auto') applyTheme();
+    });
+  }
+
+  renderAll();
+  tick();
+  setInterval(tick, 1000);
+  print('Smart Device v0.1 · 本地模式已就绪', 'ok');
+  print('数据只存在这台设备的浏览器里，无后端、无密钥。输入 help 查看命令。', 'dim');
+})();
+</script>
+</body>
+</html>
