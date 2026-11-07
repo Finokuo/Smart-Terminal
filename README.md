@@ -1,2 +1,2 @@
-# Smart-Device
-Device
+# Smart-Terminal
+Terminal
